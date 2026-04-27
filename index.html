@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escáner automático</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- ZXing -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+    <h3 class="text-center mb-4">Escáner de Código de Barras</h3>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <video id="video" class="w-100 border rounded"></video>
+        </div>
+    </div>
+
+    <div class="card shadow mt-4">
+        <div class="card-header bg-primary text-white">
+            Códigos escaneados
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Código</th>
+                        <th>Hora</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 🔊 Sonido -->
+<audio id="beep" src="./Sonido.wav" preload="auto"></audio>
+
+<script>
+const codeReader = new ZXing.BrowserMultiFormatReader();
+const video = document.getElementById('video');
+const tablaBody = document.getElementById('tablaBody');
+const beep = document.getElementById('beep');
+
+let scannedCodes = new Set();
+let contador = 1;
+
+// Iniciar automáticamente al cargar
+window.addEventListener('load', () => {
+    codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+        if (result) {
+            let codigo = result.text;
+
+            // Evitar duplicados seguidos
+            if (!scannedCodes.has(codigo)) {
+                scannedCodes.add(codigo);
+
+                // 🔊 Reproducir sonido
+                beep.currentTime = 0; // reinicia el sonido por si se repite rápido
+                beep.play().catch(() => {
+                    // Algunos navegadores requieren interacción del usuario
+                    console.log("El navegador bloqueó el audio automático");
+                });
+
+                let fila = document.createElement('tr');
+                let hora = new Date().toLocaleTimeString();
+
+                fila.innerHTML = `
+                    <td>${contador++}</td>
+                    <td>${codigo}</td>
+                    <td>${hora}</td>
+                `;
+
+                tablaBody.appendChild(fila);
+
+                // Evitar múltiples lecturas rápidas del mismo código
+                setTimeout(() => {
+                    scannedCodes.delete(codigo);
+                }, 2000);
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>
