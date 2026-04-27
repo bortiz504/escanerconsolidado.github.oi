@@ -33,6 +33,7 @@
                         <th>#</th>
                         <th>Código</th>
                         <th>Hora</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody id="tablaBody"></tbody>
@@ -50,38 +51,65 @@ const video = document.getElementById('video');
 const tablaBody = document.getElementById('tablaBody');
 const beep = document.getElementById('beep');
 
+// 👇 OBJETO PRINCIPAL (array de registros)
+let scannedData = [];
 let scannedCodes = new Set();
 let contador = 1;
 
-// Iniciar automáticamente al cargar
+// 🟢 Eliminar función
+function eliminarRegistro(id, codigo) {
+    // eliminar del array
+    scannedData = scannedData.filter(item => item.id !== id);
+
+    // eliminar del set (para permitir escanear otra vez)
+    scannedCodes.delete(codigo);
+
+    // eliminar del DOM
+    document.getElementById(`row-${id}`).remove();
+}
+
+// 🚀 Iniciar cámara
 window.addEventListener('load', () => {
     codeReader.decodeFromVideoDevice(null, video, (result, err) => {
         if (result) {
             let codigo = result.text;
 
-            // Evitar duplicados seguidos
             if (!scannedCodes.has(codigo)) {
                 scannedCodes.add(codigo);
 
-                // 🔊 Reproducir sonido
-                beep.currentTime = 0; // reinicia el sonido por si se repite rápido
-                beep.play().catch(() => {
-                    // Algunos navegadores requieren interacción del usuario
-                    console.log("El navegador bloqueó el audio automático");
-                });
+                // 🔊 sonido
+                beep.currentTime = 0;
+                beep.play().catch(() => {});
 
-                let fila = document.createElement('tr');
                 let hora = new Date().toLocaleTimeString();
+                let id = Date.now(); // id único
+
+                // 🧠 guardar en objeto
+                let registro = {
+                    id,
+                    codigo,
+                    hora
+                };
+
+                scannedData.push(registro);
+
+                // 🧾 crear fila
+                let fila = document.createElement('tr');
+                fila.id = `row-${id}`;
 
                 fila.innerHTML = `
                     <td>${contador++}</td>
                     <td>${codigo}</td>
                     <td>${hora}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarRegistro(${id}, '${codigo}')">
+                            Eliminar
+                        </button>
+                    </td>
                 `;
 
                 tablaBody.appendChild(fila);
 
-                // Evitar múltiples lecturas rápidas del mismo código
                 setTimeout(() => {
                     scannedCodes.delete(codigo);
                 }, 2000);
