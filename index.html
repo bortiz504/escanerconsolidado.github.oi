@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Escáner automático</title>
@@ -10,114 +11,139 @@
     <!-- ZXing -->
     <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
+
 <body class="bg-light">
 
-<div class="container py-4">
-    <h3 class="text-center mb-4">Escáner de Código de Barras</h3>
+    <div class="container py-4">
+        <h3 class="text-center mb-4">Escáner de Código de Barras</h3>
 
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <video id="video" class="w-100 border rounded"></video>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <video id="video" class="w-100 border rounded"></video>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4">
+            <div class="card-header bg-primary text-white">
+                Códigos escaneados
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código</th>
+                            <th>Hora</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="card shadow mt-4">
-        <div class="card-header bg-primary text-white">
-            Códigos escaneados
-        </div>
+    <!-- 🔊 Sonido -->
+    <audio id="beep" src="./Sonido.wav" preload="auto"></audio>
 
-        <div class="table-responsive">
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Código</th>
-                        <th>Hora</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
+    <script>
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const video = document.getElementById('video');
+        const tablaBody = document.getElementById('tablaBody');
+        const beep = document.getElementById('beep');
 
-<!-- 🔊 Sonido -->
-<audio id="beep" src="./Sonido.wav" preload="auto"></audio>
+        // 👇 OBJETO PRINCIPAL (array de registros)
+        let scannedData = [];
+        let destinoScanner  = [];
+        let scannedCodes = new Set();
+        let contador = 1;
 
-<script>
-const codeReader = new ZXing.BrowserMultiFormatReader();
-const video = document.getElementById('video');
-const tablaBody = document.getElementById('tablaBody');
-const beep = document.getElementById('beep');
+        // Obtenemos los parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
 
-// 👇 OBJETO PRINCIPAL (array de registros)
-let scannedData = [];
-let scannedCodes = new Set();
-let contador = 1;
+        // Obtenemos el valor del parámetro "system"
+        var sku = urlParams.get('sku');
+        var pais = urlParams.get('pais');
+        var dataObjeto = urlParams.get('objeto');
+        console.log(sku);
+        console.log(pais);
+        console.log(dataObjeto);
+        var objeto = JSON.parse(dataObjeto);
 
-// 🟢 Eliminar función
-function eliminarRegistro(id, codigo) {
-    // eliminar del array
-    scannedData = scannedData.filter(item => item.id !== id);
+        // 🟢 Eliminar función
+        function eliminarRegistro(id, codigo) {
+            // eliminar del array
+            scannedData = scannedData.filter(item => item.id !== id);
 
-    // eliminar del set (para permitir escanear otra vez)
-    scannedCodes.delete(codigo);
+            // eliminar del set (para permitir escanear otra vez)
+            scannedCodes.delete(codigo);
 
-    // eliminar del DOM
-    document.getElementById(`row-${id}`).remove();
-}
+            // Quitar del arreglo
+            destinoScanner = destinoScanner.filter(x => x !== codigo);
 
-// 🚀 Iniciar cámara
-window.addEventListener('load', () => {
-    codeReader.decodeFromVideoDevice(null, video, (result, err) => {
-        if (result) {
-            let codigo = result.text;
-
-            if (!scannedCodes.has(codigo)) {
-                scannedCodes.add(codigo);
-
-                // 🔊 sonido
-                beep.currentTime = 0;
-                beep.play().catch(() => {});
-
-                let hora = new Date().toLocaleTimeString();
-                let id = Date.now(); // id único
-
-                // 🧠 guardar en objeto
-                let registro = {
-                    id,
-                    codigo,
-                    hora
-                };
-
-                scannedData.push(registro);
-
-                // 🧾 crear fila
-                let fila = document.createElement('tr');
-                fila.id = `row-${id}`;
-
-                fila.innerHTML = `
-                    <td>${contador++}</td>
-                    <td>${codigo}</td>
-                    <td>${hora}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarRegistro(${id}, '${codigo}')">
-                            Eliminar
-                        </button>
-                    </td>
-                `;
-
-                tablaBody.appendChild(fila);
-
-                setTimeout(() => {
-                    scannedCodes.delete(codigo);
-                }, 2000);
-            }
+            // eliminar del DOM
+            document.getElementById(`row-${id}`).remove();
         }
-    });
-});
-</script>
+
+        // 🚀 Iniciar cámara
+        window.addEventListener('load', () => {
+            codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+                if (result) {
+                    let codigo = result.text;
+
+                    if (!scannedCodes.has(codigo)) {
+                        //console.log(objeto.includes(codigo))
+                        if (objeto.includes(codigo)) {
+                            scannedCodes.add(codigo);
+
+                            // 🔊 sonido
+                            beep.currentTime = 0;
+                            beep.play().catch(() => { });
+
+                            let hora = new Date().toLocaleTimeString();
+                            let id = Date.now(); // id único
+
+                            // 🧠 guardar en objeto
+                            let registro = {
+                                id,
+                                codigo,
+                                hora
+                            };
+
+                            scannedData.push(registro);
+                            destinoScanner.push(codigo);
+
+                            // 🧾 crear fila
+                            let fila = document.createElement('tr');
+                            fila.id = `row-${id}`;
+
+                            fila.innerHTML = `
+                                <td>${contador++}</td>
+                                <td>${codigo}</td>
+                                <td>${hora}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="eliminarRegistro(${id}, '${codigo}')">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            `;
+
+                            tablaBody.appendChild(fila);
+
+                            setTimeout(() => {
+                                scannedCodes.delete(codigo);
+                            }, 2000);
+                        }
+
+                    }
+
+                    //console.log(destinoScanner);
+                }
+            });
+        });
+    </script>
 
 </body>
+
 </html>
