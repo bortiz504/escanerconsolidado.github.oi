@@ -109,7 +109,8 @@
 
         function validaCodigos(){
             if(destinoScanner.length != 0){
-                window.location.href = urlObjeto + `/?sku=${sku}&pais=${pais}&objeto=${destinoScanner}`;
+                let texto = JSON.stringify(destinoScanner);
+                window.location.href = urlObjeto + `?sku=${sku}&pais=${pais}&objeto=${texto}`;
             } else{
                 alert("No se encontraron cajas escaneadas");
             }
