@@ -65,11 +65,11 @@
         // Obtenemos el valor del parámetro "system"
         var sku = urlParams.get('sku');
         var pais = urlParams.get('pais');
-        var dataObjeto = urlParams.get('objeto');
-        console.log(sku);
-        console.log(pais);
-        console.log(dataObjeto);
-        var objeto = JSON.parse(dataObjeto);
+        //var dataObjeto = urlParams.get('objeto');
+        //console.log(sku);
+        //console.log(pais);
+        //console.log(dataObjeto);
+        //var objeto = JSON.parse(dataObjeto);
 
         // 🟢 Eliminar función
         function eliminarRegistro(id, codigo) {
@@ -84,6 +84,8 @@
 
             // eliminar del DOM
             document.getElementById(`row-${id}`).remove();
+
+            //console.log(destinoScanner)
         }
 
         // 🚀 Iniciar cámara
@@ -93,8 +95,8 @@
                     let codigo = result.text;
 
                     if (!scannedCodes.has(codigo)) {
-                        //console.log(objeto.includes(codigo))
-                        if (objeto.includes(codigo)) {
+                        
+                        if (!destinoScanner.includes(codigo)) {
                             scannedCodes.add(codigo);
 
                             // 🔊 sonido
@@ -137,8 +139,6 @@
                         }
 
                     }
-
-                    //console.log(destinoScanner);
                 }
             });
         });
