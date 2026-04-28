@@ -28,7 +28,7 @@
                 Códigos escaneados
             </div>
             <div class="row g-3 align-items-center text-center">
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     <div class="col-auto">
                         <label for="skurl" class="col-form-label"><strong>SKU</strong></label>
                     </div>
@@ -38,7 +38,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     <div class="col-auto">
                         <label for="paisurl" class="col-form-label"><strong>Pais</strong></label>
                     </div>
@@ -46,6 +46,14 @@
                         <label class="col-form-label" id="paisurl">
                         
                         </label>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="col-auto">
+                        <label for="paisurl" class="col-form-label"><strong>Accion</strong></label>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" onclick="validaCodigos()">Validar y Consolidar</button>
                     </div>
                 </div>
             </div>
@@ -86,8 +94,9 @@
         // Obtenemos el valor del parámetro "system"
         var sku = urlParams.get('sku');
         var pais = urlParams.get('pais');
-        console.log(sku);
-        console.log(pais);
+        var urlObjeto = urlParams.get('objeto');
+        //console.log(sku);
+        //console.log(pais);
         document.getElementById("skurl").textContent = urlParams.get('sku') || '';
         document.getElementById("paisurl").textContent = urlParams.get('pais') || '';
         //var dataObjeto = urlParams.get('objeto');
@@ -97,6 +106,15 @@
         //var objeto = JSON.parse(dataObjeto);
 
         // 🟢 Eliminar función
+
+        function validaCodigos(){
+            if(destinoScanner.length != 0){
+                window.location.href = urlObjeto + `/?sku=${sku}&pais=${pais}&objeto=${destinoScanner.toString()}`;
+            } else{
+                alert("No se encontraron cajas escaneadas");
+            }
+        }
+
         function eliminarRegistro(id, codigo) {
             // eliminar del array
             scannedData = scannedData.filter(item => item.id !== id);
