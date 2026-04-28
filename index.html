@@ -108,10 +108,10 @@
         // 🟢 Eliminar función
 
         function validaCodigos(){
-            alert(urlObjeto);
+            //alert(urlObjeto);
             if(destinoScanner.length != 0){
-                let texto = JSON.stringify(destinoScanner);
-                window.location.href = urlObjeto + `?sku=${sku}&pais=${pais}&objeto=${texto}`;
+                //let texto = JSON.stringify(destinoScanner);
+                window.location.href = urlObjeto + `?sku=${sku}&pais=${pais}&objeto=${destinoScanner.toString()}`;
             } else{
                 alert("No se encontraron cajas escaneadas");
             }
